@@ -14,7 +14,7 @@
       false)))
 
 (defn subsets
-  "It's better to use math.combinatorics/subsets, instead"
+  "It's better to use math.combinatorics/subsets, instead. That is faster for large numbers."
   ([s]
      (if (empty? s)
        '(())
@@ -27,7 +27,7 @@
         :else nres))))
 
 (defn prime?
-  "A trivial, rigorous, and straight forward approach. Very inefficient for large primes."
+  "A trivial, rigorous, and straight forward approach -- but indeed better than trial division. Very inefficient for large primes."
   [n]
   (if (<= n 1)
     false
@@ -37,15 +37,8 @@
         false
         (not (mult-of-neibr-of-sixers? n))))))
 
-(defn pseudoprime?
-  "Fermat Pseudoprime"
-  [n base]
-  (if (or (prime? n) (= n 1))
-    false
-    (= 0 (rem (- (expt base (- n 1)) 1) n))))
-
 (defn next-prime
-  "A trivial, rigorous, and straight forward approach. Very inefficient for large numbers."
+  "A trivial, rigorous, and straight forward approach -- but indeed better than trial division. Very inefficient for large numbers."
   [n]
   (if (< n 2)
     2
@@ -78,8 +71,9 @@
     []))
 
 (defn factors [n]
-  (let [ ssets (comb/subsets (prime-factors n))]
-       (loop [[f & more] ssets res #{}]
+  (let [ subs (comb/subsets (prime-factors n))]
+    (loop [[f & more] subs
+           res #{}]
          (if-not (nil? f)
            (recur more (conj res (reduce * f)))
            (sort res)))))
@@ -116,3 +110,30 @@
   (if (prime? n)
     (dec n)
     nil))
+
+(defn pseudoprime?
+  "Fermat Pseudoprime"
+  [n base]  
+  (if (or (prime? n) (= n 1))
+    false
+    (= 0 (rem (- (expt base (- n 1)) 1) n))))
+
+(defn random
+  "Return a random number, i.e. 1 <= a <= n-1"
+  [n]
+  (bigint (+ (floor (* (dec n) (Math/random))) 1)))
+
+(defn expmod
+  [base exp m]
+  (cond
+   (= exp 0) 1  
+   (even? exp) (rem (expt (expmod base (/ exp 2) m) 2) m)
+   :else (rem (* base (expmod base (- exp 1) m)) m)))
+
+(defn fermably-prime?
+  [n t]
+  (let [a (random n)]
+    (cond
+     (= t 0) true
+     (= (expmod a n n) a) (fermably-prime? n (dec t))
+     :else false )))
