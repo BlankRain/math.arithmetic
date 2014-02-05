@@ -1,6 +1,6 @@
-# prog_clj
+# math.arithmetic
 
-A Clojure library designed to ... well, that part is up to you.
+An incomplete, but progressively growing, Clojure library designed for arithmetic functions.
 
 ## Usage
 

@@ -104,31 +104,24 @@
          (>= p (+ sig 1)) false
          :else (recur (first ps) (next ps) (sigma (reduce * (next ps)))))))))
 
-(defn totient
-  "Partially implemented, just for primes"
-  [n]
-  (if (prime? n)
-    (dec n)
-    nil))
-
-(defn pseudoprime?
-  "Fermat Pseudoprime"
-  [n base]  
-  (if (or (prime? n) (= n 1))
-    false
-    (= 0 (rem (- (expt base (- n 1)) 1) n))))
-
-(defn random
-  "Return a random number, i.e. 1 <= a <= n-1"
-  [n]
-  (bigint (+ (floor (* (dec n) (Math/random))) 1)))
-
 (defn expmod
   [base exp m]
   (cond
    (= exp 0) 1  
    (even? exp) (rem (expt (expmod base (/ exp 2) m) 2) m)
    :else (rem (* base (expmod base (- exp 1) m)) m)))
+
+(defn pseudoprime?
+  "Returns true, if n is Fermat Pseudoprime to some base b."
+  [n b]  
+  (if (or (prime? n) (= n 1))
+    false
+    (= b (expmod b n n))))
+
+(defn random
+  "Return a random bitint, i.e. 1 <= a < n"
+  [n]
+  (bigint (+ (floor (* (dec n) (Math/random))) 1)))
 
 (defn fermably-prime?
   [n t]
@@ -137,3 +130,10 @@
      (= t 0) true
      (= (expmod a n n) a) (fermably-prime? n (dec t))
      :else false )))
+
+(defn totient
+  "Partially implemented, just for primes"
+  [n]
+  (if (prime? n)
+    (dec n)
+    nil))
