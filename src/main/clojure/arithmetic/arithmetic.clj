@@ -5,7 +5,7 @@
   (:require [clojure.math.combinatorics :as comb])
   (use [clojure.math.numeric-tower]))
 
-(defn mult-of-neibr-of-sixers? [x]
+(defn- mult-of-neibr-of-sixers? [x]
   (loop [[d & more] (range 6 (+ (sqrt x) 2) 6)]
     (if-not (nil? d)
       (if (zero? (* (rem x (inc d)) (rem x (dec d))))
@@ -13,7 +13,7 @@
         (recur more))
       false)))
 
-(defn subsets
+(defn- subsets
   "It's better to use math.combinatorics/subsets, instead. That is faster for large numbers."
   ([s]
      (if (empty? s)
@@ -68,7 +68,7 @@
          (< q d) (sort (conj fcts n))
          (zero? (rem n d)) (recur q (conj fcts d) d)
          :else (recur n fcts (inc d)))))
-    []))
+    '()))
 
 (defn factors [n]
   (let [ subs (comb/subsets (prime-factors n))]
@@ -104,7 +104,7 @@
          (>= p (+ sig 1)) false
          :else (recur (first ps) (next ps) (sigma (reduce * (next ps)))))))))
 
-(defn expmod
+(defn- expmod
   [base exp m]
   (cond
    (= exp 0) 1  
@@ -112,16 +112,16 @@
    :else (rem (* base (expmod base (- exp 1) m)) m)))
 
 (defn pseudoprime?
-  "Returns true, if n is Fermat Pseudoprime to some base b."
+  "Returns true, if n is Fermat Pseudoprime to base b."
   [n b]  
   (if (or (prime? n) (= n 1))
     false
     (= b (expmod b n n))))
 
-(defn random
-  "Return a random bitint, i.e. 1 <= a < n"
+(defn- random
+  "Return a double, i.e. 1 <= a < n"
   [n]
-  (bigint (+ (floor (* (dec n) (Math/random))) 1)))
+  (+ (floor (* (dec n) (Math/random))) 1))
 
 (defn fermably-prime?
   [n t]
@@ -130,6 +130,22 @@
      (= t 0) true
      (= (expmod a n n) a) (fermably-prime? n (dec t))
      :else false )))
+
+(defn carmichael?
+  "Returns true if the number is Carmichael number, using Korselt's criterion, otherwise returns false."
+  [n]
+  (if (or (even? n) (zero? (mobius n)))
+    false
+    (let [ps (prime-factors n)]
+      (if (< (count ps) 3)
+        false                
+        (loop [divs (map dec ps)
+               k (dec n)]
+          (cond
+           (empty? divs) true
+           :else (if (zero? (rem k (first divs)))
+                   (recur (rest divs) k)
+                   false)))))))
 
 (defn totient
   "Partially implemented, just for primes"
