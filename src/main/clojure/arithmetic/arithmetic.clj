@@ -131,21 +131,26 @@
      (= (expmod a n n) a) (fermably-prime? n (dec t))
      :else false )))
 
-(defn carmichael?
-  "Returns true if the number is Carmichael number, using Korselt's criterion, otherwise returns false."
+(defn- precarmic-check
   [n]
   (if (or (even? n) (zero? (mobius n)))
     false
     (let [ps (prime-factors n)]
       (if (< (count ps) 3)
-        false                
-        (loop [divs (map dec ps)
-               k (dec n)]
-          (cond
-           (empty? divs) true
-           :else (if (zero? (rem k (first divs)))
+        false
+        ps))))
+
+(defn carmichael?
+  "Returns true if the number is Carmichael number, using Korselt's criterion, otherwise returns false."
+  [n]
+  (if-let [ps (precarmic-check n)]
+    (loop [divs (map dec ps)
+           k (dec n)]
+      (if-not (empty? divs)
+        (if (zero? (rem k (first divs)))
                    (recur (rest divs) k)
-                   false)))))))
+                   false)
+        true))))
 
 (defn totient
   "Partially implemented, just for primes"
