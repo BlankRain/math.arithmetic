@@ -2,7 +2,8 @@
   #^{:author "Adeel Ansari",
      :doc "Empty"}
   clojure.math.arithmetic
-  (:require [clojure.math.combinatorics :as comb])
+  (:require [clojure.math.combinatorics :as comb]
+            [clojure.set :as set])
   (use [clojure.math.numeric-tower]))
 
 (defn- mult-of-neibr-of-sixers? [x]
@@ -94,6 +95,16 @@
          :else -1)
         0))))
 
+(defn totient
+  "Euler totient function."
+  [n]
+  (if (prime? n)
+    (do
+      prn "prime"
+      (dec n))
+    (reduce + (for [d (factors n)]
+                       (* (mobius d) (/ n d))))))
+
 (defn practical? [n]
   (if-not (or (even? n) (== n 1))
     false
@@ -112,7 +123,7 @@
    :else (rem (* base (expmod base (- exp 1) m)) m)))
 
 (defn pseudoprime?
-  "Returns true, if n is Fermat Pseudoprime to base b."
+  "Returns true, if n is Fermat Pseudoprime to base b. Returns false, otherwise or if n is prime."
   [n b]  
   (if (or (prime? n) (= n 1))
     false
@@ -125,13 +136,13 @@
 
 (defn fermably-prime?
   [n t]
-  (let [a (random n)]
+  (let [a (bigint (random n))]
     (cond
      (= t 0) true
      (= (expmod a n n) a) (fermably-prime? n (dec t))
      :else false )))
 
-(defn- precarmic-check
+(defn- precarmich-check
   [n]
   (if (or (even? n) (zero? (mobius n)))
     false
@@ -143,7 +154,7 @@
 (defn carmichael?
   "Returns true if the number is Carmichael number, using Korselt's criterion, otherwise returns false."
   [n]
-  (if-let [ps (precarmic-check n)]
+  (if-let [ps (precarmich-check n)]
     (loop [divs (map dec ps)
            k (dec n)]
       (if-not (empty? divs)
@@ -152,9 +163,9 @@
                    false)
         true))))
 
-(defn totient
-  "Partially implemented, just for primes"
+(defn mangoldt
   [n]
-  (if (prime? n)
-    (dec n)
-    nil))
+  (let [fcts (distinct (prime-factors n))]
+    (if (= 1 (count fcts))
+      (Math/log (first fcts))
+      0)))
