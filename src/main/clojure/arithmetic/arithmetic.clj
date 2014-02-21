@@ -99,9 +99,7 @@
   "Euler totient function."
   [n]
   (if (prime? n)
-    (do
-      prn "prime"
-      (dec n))
+    (dec n)
     (reduce + (for [d (factors n)]
                        (* (mobius d) (/ n d))))))
 
@@ -127,19 +125,19 @@
   [n b]  
   (if (or (prime? n) (= n 1))
     false
-    (= b (expmod b n n))))
+    (= (expmod b n n) b)))
 
 (defn- random
-  "Return a double, i.e. 1 <= a < n"
+  "Returns a random floating point number, such that 1 <= a < n"
   [n]
-  (+ (floor (* (dec n) (Math/random))) 1))
+  (+ (floor (rand (dec n))) 1))
 
 (defn fermably-prime?
   [n t]
-  (let [a (bigint (random n))]
+  (let [b (bigint (random n))]
     (cond
      (= t 0) true
-     (= (expmod a n n) a) (fermably-prime? n (dec t))
+     (= (expmod b n n) b) (recur n (dec t))
      :else false )))
 
 (defn- precarmich-check
@@ -158,10 +156,11 @@
     (loop [divs (map dec ps)
            k (dec n)]
       (if-not (empty? divs)
-        (if (zero? (rem k (first divs)))
-                   (recur (rest divs) k)
-                   false)
-        true))))
+        (when (zero? (rem k (first divs)))          
+          (recur (rest divs) k))
+        true))
+    false
+    ))
 
 (defn mangoldt
   [n]
@@ -169,3 +168,13 @@
     (if (= 1 (count fcts))
       (Math/log (first fcts))
       0)))
+
+(defn chebyshev-psi
+  [n]  
+  (reduce + (for [x (range 1 n)]
+              (mangoldt x))))
+
+(defn chebyshev-theta
+  []
+  
+  )
