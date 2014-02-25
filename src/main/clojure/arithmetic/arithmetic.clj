@@ -48,7 +48,7 @@
         k
         (recur (+ k 2))))))
 
-(defn next-nprimes
+(defn- next-nprimes
   "A trivial and straight forward approach. Throws exception for n > 100."
   [from n]
   (if (< (* from n) 0)
@@ -171,10 +171,12 @@
 
 (defn chebyshev-psi
   [n]  
-  (reduce + (for [x (range 1 n)]
+  (reduce + (for [x (range 1 (inc n))]
               (mangoldt x))))
 
 (defn chebyshev-theta
-  []
-  
-  )
+  [n]
+  (reduce + (for [x (range 1 (inc n))
+                :let [p? (prime? x)]
+                :when (true? p?)]
+              (Math/log x))))
