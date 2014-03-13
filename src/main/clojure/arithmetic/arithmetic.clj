@@ -6,10 +6,10 @@
             [clojure.set :as set])
   (use [clojure.math.numeric-tower]))
 
-(defn- mult-of-neibr-of-sixers? [x]
-  (loop [[d & more] (range 6 (+ (sqrt x) 2) 6)]
+(defn- mult-of-neibr-of-sixers? [n]
+  (loop [[d & more] (range 6 (+ (sqrt n) 2) 6)]
     (if-not (nil? d)
-      (if (zero? (* (rem x (inc d)) (rem x (dec d))))
+      (if (zero? (* (rem n (inc d)) (rem n (dec d))))
         true
         (recur more))
       false)))
@@ -28,25 +28,26 @@
         :else nres))))
 
 (defn prime?
-  "A trivial, rigorous, and straight forward approach -- but indeed better than trial division. Very inefficient for large primes."
+  "An efficient trial and error approach -- very inefficient for large primes."
   [n]
   (if (<= n 1)
     false
-    (if (or (= n 2) (= n 3))
+    (if (or (== n 2) (== n 3))
       true
-      (if (= 0 (* (rem n 2) (rem n 3)))
+      (if (zero? (* (rem n 2) (rem n 3)))
         false
         (not (mult-of-neibr-of-sixers? n))))))
 
 (defn next-prime
-  "A trivial, rigorous, and straight forward approach -- but indeed better than trial division. Very inefficient for large numbers."
+  "It checks the primality using prime?, for every odd number > n"
   [n]
-  (if (< n 2)
-    2
-    (loop [k (if (odd? n) (+ n 2) (inc n))]
-      (if (prime? k)
-        k
-        (recur (+ k 2))))))
+  (let [n (bigint n)]
+    (if (< n 2)
+      2
+      (loop [k (if (odd? n) (+ n 2) (inc n))]
+        (if (prime? k)
+          k
+          (recur (+ k 2)))))))
 
 (defn- next-nprimes
   "A trivial and straight forward approach. Throws exception for n > 100."
@@ -89,7 +90,7 @@
   (let [pfacts (prime-factors n)]
     (let [tot-pfacts (count pfacts)
           tot-dist-pfacts (count (distinct pfacts))]
-      (if (= tot-pfacts tot-dist-pfacts)
+      (if (== tot-pfacts tot-dist-pfacts)
         (cond
          (and (even? tot-pfacts) ) 1
          :else -1)
@@ -116,28 +117,28 @@
 (defn- expmod
   [base exp m]
   (cond
-   (= exp 0) 1  
+   (== exp 0) 1  
    (even? exp) (rem (expt (expmod base (/ exp 2) m) 2) m)
    :else (rem (* base (expmod base (- exp 1) m)) m)))
 
 (defn pseudoprime?
   "Returns true, if n is Fermat Pseudoprime to base b. Returns false, otherwise or if n is prime."
   [n b]  
-  (if (or (prime? n) (= n 1))
+  (if (or (prime? n) (== n 1))
     false
-    (= (expmod b n n) b)))
+    (== (expmod b n n) b)))
 
 (defn- random
-  "Returns a random floating point number, such that 1 <= a < n"
+  "Returns a random bigint, such that 1 <= a < n"
   [n]
-  (+ (floor (rand (dec n))) 1))
+  (bigint (bigdec (+ (floor (* (rand) n)) 1))))
 
 (defn fermably-prime?
   [n t]
-  (let [b (bigint (random n))]
+  (let [b (random n) t (int t)]
     (cond
-     (= t 0) true
-     (= (expmod b n n) b) (recur n (dec t))
+     (== t 0) true
+     (== (expmod b n n) b) (recur n (dec t))
      :else false )))
 
 (defn- precarmich-check
@@ -165,7 +166,7 @@
 (defn mangoldt
   [n]
   (let [fcts (distinct (prime-factors n))]
-    (if (= 1 (count fcts))
+    (if (== 1 (count fcts))
       (Math/log (first fcts))
       0)))
 
